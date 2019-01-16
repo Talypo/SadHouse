@@ -6,11 +6,13 @@ public class Runner : MonoBehaviour
 {
     private Entity entity;
 
-    private float maxSpeed = 3.0f;
+    private bool enabled = true;
+
+    private float maxSpeed = 4.0f;
     private float targetSpeed = 0;
 
-    private float startingTime = .1f;  // Time to go from standing still to moving
-    private float stoppingTime = .1f;  // To to go from moving to stopped
+    private float startLag = .1f;  // Time to go from standing still to moving
+    private float stopLag = .1f;  // To to go from moving to stopped
 
     private float timer = 0;
 
@@ -18,7 +20,6 @@ public class Runner : MonoBehaviour
     void Start()
     {
         entity = GetComponent<Entity>();
-        entity.SetGravity(new Vector2(0, -.5f));
     }
 
     // Update is called once per frame
@@ -37,7 +38,7 @@ public class Runner : MonoBehaviour
             }
             else
             {
-                timer = stoppingTime;
+                timer = stopLag;
                 entity.SetState("runstop");
             }
         }
@@ -57,9 +58,9 @@ public class Runner : MonoBehaviour
                 entity.SetState("idle");
             }
         }
-        else if (targetSpeed != 0)
+        else if (enabled && targetSpeed != 0)
         {
-            timer = startingTime;
+            timer = startLag;
             entity.SetState("runstart");
         }
     }
@@ -67,5 +68,10 @@ public class Runner : MonoBehaviour
     public void Run(float power)
     {
         targetSpeed = power * maxSpeed;
+    }
+
+    public void SetEnabled(bool en)
+    {
+        enabled = en;
     }
 }
