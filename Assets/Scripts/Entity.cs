@@ -14,22 +14,35 @@ public class Entity : MonoBehaviour
     private bool grounded;
     private Vector2 groundNormal;
 
-    private string state;
+    public EntityState state;
 
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        state = "idle";
+        state = new IdleState.Idle();
     }
 
     // Update is called once per frame
     void Update()
     {
+        Debug.Log(state.Name);
     }
 
     void FixedUpdate()
     {
+        // State
+
+        EntityState next = state.Update(this);
+        if (next != state)
+        {
+            state.End(this);
+            state = next;
+            state.Start(this);
+        }
+
+        // Movement
+
         extVelocity += gravity;
 
         if (IsGrounded())
@@ -122,11 +135,20 @@ public class Entity : MonoBehaviour
 
     public void SetState(string _state)
     {
-        state = _state;
     }
     public string GetState()
     {
-        return state;
+        return state.Name;
+    }
+
+    public void TransitionState(EntityState _state)
+    {
+        if (_state.Follows(state))
+        {
+            state.End(this);
+            state = _state;
+            state.Start(this);
+        }
     }
 
     // Ground Detection
@@ -155,14 +177,11 @@ public class Entity : MonoBehaviour
         {
             if (Vector2.Angle(c.normal, gravity) >= 120)
             {
-                Debug.Log("On Ground");
                 grounded = true;
                 groundNormal = c.normal;
                 return;
             }
         }
-
-        Debug.Log("Wall");
         grounded = false;
     }
 
@@ -181,7 +200,11 @@ public class Entity : MonoBehaviour
 
     void OnCollisionExit2D(Collision2D other)
     {
-        Debug.Log("No Ground");
         grounded = false;
+    }
+
+    public float FallSpeed()
+    {
+        return Vector2.Dot(gravity, rb.velocity.normalized);
     }
 }

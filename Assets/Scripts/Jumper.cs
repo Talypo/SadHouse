@@ -5,7 +5,6 @@ using UnityEngine;
 public class Jumper : MonoBehaviour
 {
     private Entity entity;
-    private Runner runner;
 
     private float maxSpeed = 9.0f;
     private float targetSpeed = 0;
@@ -16,17 +15,11 @@ public class Jumper : MonoBehaviour
     private float squatLag = .1f;
     private float landLag = .1f;
 
-    private bool enabled = true;
-
-    private float timer = 0;
-
     // Start is called before the first frame update
     void Start()
     {
         entity = GetComponent<Entity>();
         entity.SetGravity(new Vector2(0, -.4f));
-
-        runner = GetComponent<Runner>();
     }
 
     // Update is called once per frame
@@ -38,54 +31,13 @@ public class Jumper : MonoBehaviour
         Move(Input.GetAxis("Horizontal"));
     }
 
-    void FixedUpdate()
-    {
-        if (entity.GetState() == "jumpsquat")
-        {
-            if ((timer -= Time.deltaTime) <= 0)
-            {
-                entity.SetState("jump");
-                entity.SetExtVelocityY(targetSpeed);
-                targetSpeed = 0;
-            }
-        }
-        else if (entity.GetState() == "jump")
-        {
-            entity.SetIntVelocityX(targetAirSpeed);
-
-            if (entity.GetVelocityY() <= 0 && entity.IsGrounded())
-            {
-                timer = landLag;
-                entity.SetState("jumpland");
-                entity.SetIntVelocityX(0);
-            }
-        }
-        else if (entity.GetState() == "jumpland")
-        {
-            if ((timer -= Time.deltaTime) <= 0)
-            {
-                entity.SetState("idle");
-                SetEnabled(true);
-                if (runner != null)
-                    runner.SetEnabled(true);
-            }
-        }
-        else if (enabled && targetSpeed != 0)
-        {
-            timer = squatLag;
-            entity.SetIntVelocityX(0);
-            entity.SetState("jumpsquat");
-
-            SetEnabled(false);
-            if (runner != null)
-                runner.SetEnabled(false);
-        }
-    }
-
     public void Jump(float power)
     {
-        if (targetSpeed >= 0)
+        if (targetSpeed >= 0 && entity.IsGrounded())
+        {
             targetSpeed = power * maxSpeed;
+            entity.TransitionState(new JumpSquat(this));
+        }
     }
 
     public void Move(float power)
@@ -93,8 +45,63 @@ public class Jumper : MonoBehaviour
         targetAirSpeed = power * maxAirSpeed;
     }
 
-    public void SetEnabled(bool en)
+    // States
+
+    public class JumpState : EntityState
     {
-        enabled = en;
+        public Jumper jumper;
+
+        public JumpState(EntityState e):
+            base("jump")
+        {
+            jumper = ((JumpSquat)e).jumper;
+            AddPrevious(typeof(JumpSquat));
+            AddNext(typeof(JumpLand), ent => ent.IsGrounded() && ent.FallSpeed() >= 0);
+        }
+
+        public override void Start(Entity e)
+        {
+            e.SetExtVelocityY(jumper.targetSpeed);
+        }
+
+        public override void Action(Entity e)
+        {
+            e.SetIntVelocityX(jumper.targetAirSpeed);
+        }
+    }
+
+    public class JumpSquat : EntityState
+    {
+        public Jumper jumper;
+
+        public JumpSquat(Jumper _jumper):
+            base("jumpsquat")
+        {
+            jumper = _jumper;
+            AddPrevious(typeof(IdleState.Idle));
+            AddPrevious(typeof(Runner.RunState));
+            AddNextTimeout(typeof(JumpState), jumper.squatLag);
+        }
+
+        public override void Start(Entity e)
+        {
+            e.SetIntVelocityX(0);
+        }
+    }
+
+    public class JumpLand : EntityState
+    {
+        public JumpLand(EntityState e):
+            base("jumpland")
+        {
+            Jumper jumper = ((JumpState)e).jumper;
+            AllowAnyPrevious = true;
+            AddNextTimeout(typeof(IdleState.Idle), jumper.landLag);
+        }
+
+        public override void Start(Entity e)
+        {
+            e.SetIntVelocityX(0);
+        }
     }
 }

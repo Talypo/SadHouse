@@ -6,15 +6,11 @@ public class Runner : MonoBehaviour
 {
     private Entity entity;
 
-    private bool enabled = true;
-
     private float maxSpeed = 4.0f;
     private float targetSpeed = 0;
 
     private float startLag = .1f;  // Time to go from standing still to moving
     private float stopLag = .1f;  // To to go from moving to stopped
-
-    private float timer = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -25,53 +21,78 @@ public class Runner : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-         Run(Input.GetAxis("Horizontal"));
+        if (Input.GetAxis("Horizontal") != 0)
+        {
+            Run(Input.GetAxis("Horizontal"));
+        }
+        else
+        {
+            Stop();
+        }
     }
 
     void FixedUpdate()
     {
-        if (entity.GetState() == "run")
-        {
-            if (targetSpeed != 0)
-            {
-                entity.SetIntVelocityX(targetSpeed);
-            }
-            else
-            {
-                timer = stopLag;
-                entity.SetState("runstop");
-            }
-        }
-        else if (entity.GetState() == "runstart")
-        {
-            if ((timer -= Time.deltaTime) <= 0)
-            {
-                entity.SetState("run");
-            }
-        }
-        else if (entity.GetState() == "runstop")
-        {
-            entity.SetIntVelocityX(0);
-
-            if ((timer -= Time.deltaTime) <= 0)
-            {
-                entity.SetState("idle");
-            }
-        }
-        else if (enabled && targetSpeed != 0)
-        {
-            timer = startLag;
-            entity.SetState("runstart");
-        }
     }
 
     public void Run(float power)
     {
         targetSpeed = power * maxSpeed;
+        entity.TransitionState(new RunStart(this));
     }
 
-    public void SetEnabled(bool en)
+    public void Stop()
     {
-        enabled = en;
+        entity.TransitionState(new RunStop(this));
+    }
+
+    // States
+
+    public class RunState : EntityState
+    {
+        public Runner runner;
+
+        public RunState(EntityState e):
+            base("run")
+        {
+            runner = ((RunStart)e).runner;
+            AddPrevious(typeof(RunStart));
+        }
+
+        public override void Action(Entity e)
+        {
+            e.SetIntVelocityX(runner.targetSpeed);
+        }
+    }
+
+    public class RunStart : EntityState
+    {
+        public Runner runner;
+
+        public RunStart(Runner _runner):
+            base("runstart")
+        {
+            runner = _runner;
+            AddPrevious(typeof(IdleState.Idle));
+            AddNextTimeout(typeof(RunState), runner.startLag);
+        }
+    }
+
+    public class RunStop : EntityState
+    {
+        public Runner runner;
+
+        public RunStop(Runner _runner):
+            base("runstop")
+        {
+            runner = _runner;
+            AddPrevious(typeof(RunState));
+            AddNextTimeout(typeof(IdleState.Idle), runner.stopLag);
+        }
+
+        public override void Start(Entity e)
+        {
+            e.SetIntVelocityX(0);
+        }
     }
 }
