@@ -28,6 +28,9 @@ public class Jumper : MonoBehaviour
         if (Input.GetButtonDown("Jump"))
             Jump(1.0f);
 
+        if (Input.GetButtonUp("Jump"))
+            Jump(.75f);
+
         Move(Input.GetAxis("Horizontal"));
     }
 
@@ -79,6 +82,7 @@ public class Jumper : MonoBehaviour
         {
             jumper = _jumper;
             AddPrevious(typeof(IdleState.Idle));
+            AddPrevious(typeof(Runner.RunStart));
             AddPrevious(typeof(Runner.RunState));
             AddNextTimeout(typeof(JumpState), jumper.squatLag);
         }
