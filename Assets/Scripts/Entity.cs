@@ -14,31 +14,18 @@ public class Entity : MonoBehaviour
     private bool grounded;
     private Vector2 groundNormal;
 
+    private string state;
+
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-
-        gravity = new Vector2(0,-.05f);
+        state = "idle";
     }
 
     // Update is called once per frame
     void Update()
     {
-        SetIntVelocityX(Input.GetAxis("Horizontal"));
-
-        /*if (Input.GetAxis("Vertical") > .25)
-        {
-            AddExtVelocity(0, .025f - gravity.y);
-            //
-        }*/
-
-        if (IsGrounded() && Input.GetAxis("Vertical") > .25)
-        {
-            AddExtVelocity(0, 1f - gravity.y);
-        }
-
-        //Debug.Log(extVelocity.y);
     }
 
     void FixedUpdate()
@@ -52,9 +39,6 @@ public class Entity : MonoBehaviour
 
             float normComp = Vector2.Dot(extVelocity, gNorm);
             float tanComp = Vector2.Dot(extVelocity, gTan);
-
-            //Debug.Log("Normal=" + normComp + ", Tangent=" + tanComp + ", Total=" + extVelocity.magnitude);
-            //Debug.Log("Normal=" + gNorm + ", Tangent=" + gTan);
 
             if (normComp < 0)
             {
@@ -70,9 +54,11 @@ public class Entity : MonoBehaviour
         rb.velocity = intVelocity + extVelocity;
     }
 
-    public void SetIntVelocity(float x, float y)
+    // Internal Velocity
+
+    public void SetIntVelocity(Vector2 vec)
     {
-        intVelocity = new Vector2(x,y);
+        intVelocity = vec;
     }
     public void SetIntVelocityX(float x)
     {
@@ -82,19 +68,16 @@ public class Entity : MonoBehaviour
     {
         intVelocity.y = y;
     }
-
-    public void AddIntVelocity(float x, float y)
+     public void AddIntVelocity(Vector2 vec)
     {
-        AddIntVelocity(new Vector2(x,y));
-    }
-    public void AddIntVelocity(Vector2 v)
-    {
-        intVelocity += v;
+        intVelocity += vec;
     }
 
-    public void SetExtVelocity(float x, float y)
+    // External Velocity
+
+    public void SetExtVelocity(Vector2 vec)
     {
-        extVelocity = new Vector2(x,y);
+        extVelocity = vec;
     }
     public void SetExtVelocityX(float x)
     {
@@ -104,15 +87,49 @@ public class Entity : MonoBehaviour
     {
         extVelocity.y = y;
     }
+    public void AddExtVelocity(Vector2 vec)
+    {
+        extVelocity += vec;
+    }
 
-    public void AddExtVelocity(float x, float y)
+    // Total Velocity
+
+    public Vector2 GetVelocity()
     {
-        AddExtVelocity(new Vector2(x,y));
+        return rb.velocity;
     }
-    public void AddExtVelocity(Vector2 v)
+    public float GetVelocityX()
     {
-        extVelocity += v;
+        return rb.velocity.x;
     }
+    public float GetVelocityY()
+    {
+        return rb.velocity.y;
+    }
+
+    // Gravity
+
+    public void SetGravity(Vector2 vec)
+    {
+        gravity = vec;
+    }
+    public Vector2 GetGravity()
+    {
+        return gravity;
+    }
+
+    // State
+
+    public void SetState(string _state)
+    {
+        state = _state;
+    }
+    public string GetState()
+    {
+        return state;
+    }
+
+    // Ground Detection
 
     public bool IsGrounded()
     {
