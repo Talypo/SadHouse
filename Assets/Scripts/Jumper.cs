@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 public class Jumper : MonoBehaviour
 {
+    public Sprite Spr;
+    public Sprite StartSpr;
+    public Sprite StopSpr;
+
     private Entity entity;
 
     public float gravity = .4f;
@@ -13,7 +17,7 @@ public class Jumper : MonoBehaviour
     public float maxAirSpeed = 2.0f;
     private float targetAirSpeed = 0;
 
-    public float squatLag = .1f;
+    public float squatLag = .2f;
     public float landLag = .1f;
 
     // Start is called before the first frame update
@@ -40,7 +44,7 @@ public class Jumper : MonoBehaviour
         if (targetSpeed >= 0 && entity.IsGrounded())
         {
             targetSpeed = power * maxSpeed;
-            entity.TransitionState(new JumpSquat(this));
+            entity.TransitionState(typeof(JumpSquat));
         }
     }
 
@@ -55,16 +59,17 @@ public class Jumper : MonoBehaviour
     {
         public Jumper jumper;
 
-        public JumpState(EntityState e):
+        public JumpState(Entity e, EntityState s):
             base("jump")
         {
-            jumper = ((JumpSquat)e).jumper;
+            jumper = e.GetComponent<Jumper>();
             AddPrevious(typeof(JumpSquat));
             AddNext(typeof(JumpLand), ent => ent.IsGrounded() && ent.FallSpeed() >= 0);
         }
 
         public override void Start(Entity e)
         {
+            e.GetComponent<SpriteRenderer>().sprite = jumper.Spr;
             e.SetExtVelocityY(jumper.targetSpeed);
         }
 
@@ -78,10 +83,10 @@ public class Jumper : MonoBehaviour
     {
         public Jumper jumper;
 
-        public JumpSquat(Jumper _jumper):
+        public JumpSquat(Entity e, EntityState s):
             base("jumpsquat")
         {
-            jumper = _jumper;
+            jumper = e.GetComponent<Jumper>();
             AddPrevious(typeof(IdleState.Idle));
             AddPrevious(typeof(Runner.RunStart));
             AddPrevious(typeof(Runner.RunState));
@@ -91,22 +96,26 @@ public class Jumper : MonoBehaviour
 
         public override void Start(Entity e)
         {
+            e.GetComponent<SpriteRenderer>().sprite = jumper.StartSpr;
             e.SetIntVelocityX(0);
         }
     }
 
     public class JumpLand : EntityState
     {
-        public JumpLand(EntityState e):
+        private Jumper jumper;
+
+        public JumpLand(Entity e, EntityState s):
             base("jumpland")
         {
-            Jumper jumper = ((JumpState)e).jumper;
+            jumper = e.GetComponent<Jumper>();
             AllowAnyPrevious = true;
             AddNextTimeout(typeof(IdleState.Idle), jumper.landLag);
         }
 
         public override void Start(Entity e)
         {
+            e.GetComponent<SpriteRenderer>().sprite = jumper.StopSpr;
             e.SetIntVelocityX(0);
         }
     }

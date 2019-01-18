@@ -6,7 +6,7 @@ namespace IdleState
 {
     public class Idle : EntityState
     {
-        public Idle(EntityState e = null):
+        public Idle(Entity e, EntityState s = null):
             base("idle")
         {
             AllowAnyPrevious = true;

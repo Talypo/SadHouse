@@ -22,7 +22,7 @@ public class Entity : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        state = new IdleState.Idle();
+        state = new IdleState.Idle(this);
     }
 
     // Update is called once per frame
@@ -151,6 +151,20 @@ public class Entity : MonoBehaviour
 
             if (state.Name == "idle")
                 GetComponent<SpriteRenderer>().sprite = IdleSpr;
+        }
+    }
+    public void TransitionState(System.Type stateType)
+    {
+        System.Type[] argTypes = { typeof(Entity), typeof(EntityState) };
+        System.Reflection.ConstructorInfo ci = stateType.GetConstructor(argTypes);
+
+        // If a constructor accepting an EntityState was found
+        if (ci != null)
+        {
+            System.Object[] args = { this, state };
+            EntityState newState = (EntityState)ci.Invoke(args);
+
+            TransitionState(newState);
         }
     }
 

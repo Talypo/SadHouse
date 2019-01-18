@@ -10,6 +10,7 @@ public abstract class EntityState
 
     public string Name {get; set;}
     public bool AllowAnyPrevious {get; set;}
+    public Entity Entity { get; set; }
 
     private List<Type> previous;
     private List<Tuple<Type, Predicate>> next;
@@ -73,54 +74,41 @@ public abstract class EntityState
 
         Action(e);
 
+        List<Type> possibleNextStates = new List<Type>();
+
         foreach (var n in next)
         {
-            Type state = n.Item1;
+            Type stateType = n.Item1;
             Predicate pred = n.Item2;
 
-            // If predicate satisfied
             if (pred.Invoke(e))
-            {
-                Type[] argTypes = {typeof(EntityState) };
-                ConstructorInfo ci = state.GetConstructor(argTypes);
-
-                // If a constructor accepting an EntityState was found
-                if (ci != null)
-                {
-                    System.Object[] args = { this };
-                    EntityState newState = (EntityState)ci.Invoke(args);
-
-                    // If the state can follow this one
-                    if (newState.Follows(this))
-                    {
-                        return newState;
-                    }
-                }
-            }
+                possibleNextStates.Add(stateType);
         }
 
         foreach (var t in timeout)
         {
-            Type state = t.Item1;
+            Type stateType = t.Item1;
             float time = t.Item2;
 
-            // If time has elapsed
             if (timer >= time)
+                possibleNextStates.Add(stateType);
+        }
+
+        foreach (var stateType in possibleNextStates)
+        {
+            Type[] argTypes = { typeof(Entity), typeof(EntityState) };
+            ConstructorInfo ci = stateType.GetConstructor(argTypes);
+
+            // If a constructor accepting an EntityState was found
+            if (ci != null)
             {
-                Type[] argTypes = {typeof(EntityState) };
-                ConstructorInfo ci = state.GetConstructor(argTypes);
+                System.Object[] args = { e, this };
+                EntityState newState = (EntityState)ci.Invoke(args);
 
-                // If a constructor accepting an EntityState was found
-                if (ci != null)
+                // If the state can follow this one
+                if (newState.Follows(this))
                 {
-                    System.Object[] args = { this };
-                    EntityState newState = (EntityState)ci.Invoke(args);
-
-                    // If the state can follow this one
-                    if (newState.Follows(this))
-                    {
-                        return newState;
-                    }
+                    return newState;
                 }
             }
         }

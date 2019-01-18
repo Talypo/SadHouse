@@ -44,14 +44,14 @@ public class Runner : MonoBehaviour
 
         targetSpeed = power * maxSpeed;
         if (turn)
-            entity.TransitionState(new RunStop(this));
+            entity.TransitionState(typeof(RunStop));
         else
-            entity.TransitionState(new RunStart(this));
+            entity.TransitionState(typeof(RunStart));
     }
 
     public void Stop()
     {
-        entity.TransitionState(new RunStop(this));
+        entity.TransitionState(typeof(RunStop));
     }
 
     // States
@@ -60,10 +60,10 @@ public class Runner : MonoBehaviour
     {
         public Runner runner;
 
-        public RunState(EntityState e):
+        public RunState(Entity e, EntityState s):
             base("run")
         {
-            runner = ((RunStart)e).runner;
+            runner = e.GetComponent<Runner>();
             AddPrevious(typeof(RunStart));
         }
 
@@ -84,10 +84,10 @@ public class Runner : MonoBehaviour
     {
         public Runner runner;
 
-        public RunStart(Runner _runner):
+        public RunStart(Entity e, EntityState s):
             base("runstart")
         {
-            runner = _runner;
+            runner = e.GetComponent<Runner>();
             AddPrevious(typeof(IdleState.Idle));
             AddNextTimeout(typeof(RunState), runner.startLag);
         }
@@ -104,10 +104,10 @@ public class Runner : MonoBehaviour
     {
         public Runner runner;
 
-        public RunStop(Runner _runner):
+        public RunStop(Entity e, EntityState s):
             base("runstop")
         {
-            runner = _runner;
+            runner = e.GetComponent<Runner>();
             AddPrevious(typeof(RunState));
             AddNextTimeout(typeof(IdleState.Idle), runner.stopLag);
         }
