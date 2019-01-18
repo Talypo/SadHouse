@@ -14,6 +14,7 @@ public class Entity : MonoBehaviour
 
     private bool grounded;
     private Vector2 groundNormal;
+    private float groundTime;
 
     private EntityAnimation anim;
     private EntityState state;
@@ -71,6 +72,12 @@ public class Entity : MonoBehaviour
         }
 
         rb.velocity = intVelocity + extVelocity;
+
+        // Ground
+        if (IsGrounded())
+            groundTime += Time.deltaTime;
+        else
+            groundTime = 0;
     }
 
     // Internal Velocity
@@ -87,9 +94,13 @@ public class Entity : MonoBehaviour
     {
         intVelocity.y = y;
     }
-     public void AddIntVelocity(Vector2 vec)
+    public void AddIntVelocity(Vector2 vec)
     {
         intVelocity += vec;
+    }
+    public Vector2 GetIntVelocity()
+    {
+        return intVelocity;
     }
 
     // External Velocity
@@ -109,6 +120,10 @@ public class Entity : MonoBehaviour
     public void AddExtVelocity(Vector2 vec)
     {
         extVelocity += vec;
+    }
+    public Vector2 GetExtVelocity()
+    {
+        return extVelocity;
     }
 
     // Total Velocity
@@ -193,6 +208,11 @@ public class Entity : MonoBehaviour
     public Vector2 GetGroundTangent()
     {
         return -Vector2.Perpendicular(groundNormal);
+    }
+
+    public bool JustLanded()
+    {
+        return groundTime <= 3 * Time.deltaTime;
     }
 
     private void GroundCheck(Collision2D other)

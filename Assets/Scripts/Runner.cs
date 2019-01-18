@@ -34,6 +34,9 @@ public class Runner : MonoBehaviour
 
     public void Run(float power)
     {
+        if (!entity.IsGrounded() || entity.JustLanded())
+            return;
+
         if (power == 0)
         {
             Stop();
@@ -58,6 +61,9 @@ public class Runner : MonoBehaviour
 
     public void Stop()
     {
+        if (!entity.IsGrounded() || entity.JustLanded())
+            return;
+
         entity.TransitionState(typeof(RunStop));
     }
 
@@ -73,6 +79,7 @@ public class Runner : MonoBehaviour
             runner = e.GetComponent<Runner>();
             AddPrevious(typeof(RunStart));
             AddPrevious(typeof(IdleState.Idle));
+            AddNext(typeof(IdleState.Idle), ent => !ent.IsGrounded());
         }
 
         public override void Start(Entity e)
@@ -98,6 +105,7 @@ public class Runner : MonoBehaviour
             runner = e.GetComponent<Runner>();
             AddPrevious(typeof(IdleState.Idle));
             AddNextTimeout(typeof(RunState), runner.startLag);
+            AddNext(typeof(IdleState.Idle), ent => !ent.IsGrounded());
         }
 
         public override void Start(Entity e)
@@ -118,6 +126,7 @@ public class Runner : MonoBehaviour
             runner = e.GetComponent<Runner>();
             AddPrevious(typeof(RunState));
             AddNextTimeout(typeof(IdleState.Idle), runner.stopLag);
+            AddNext(typeof(IdleState.Idle), ent => !ent.IsGrounded());
         }
 
         public override void Start(Entity e)

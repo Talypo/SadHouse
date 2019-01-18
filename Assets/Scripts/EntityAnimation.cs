@@ -29,6 +29,7 @@ public class EntityAnimation : MonoBehaviour
                 if (looping)
                 {
                     Begin(entity, speed);
+                    return;
                 }
                 else
                 {
@@ -44,7 +45,8 @@ public class EntityAnimation : MonoBehaviour
                 ++curSpr;
                 curTime = 0;
 
-                entity.GetComponent<SpriteRenderer>().sprite = sprites[curSpr];
+                if (curSpr < sprites.Count && curSpr < durations.Count)
+                    entity.GetComponent<SpriteRenderer>().sprite = sprites[curSpr];
             }
         }
     }
