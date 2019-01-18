@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class Runner : MonoBehaviour
 {
-    public Sprite Spr;
-    public Sprite StartSpr;
-    public Sprite StopSpr;
+    public EntityAnimation runAnim;
+    public EntityAnimation startAnim;
+    public EntityAnimation stopAnim;
 
     private Entity entity;
 
@@ -77,7 +77,7 @@ public class Runner : MonoBehaviour
 
         public override void Start(Entity e)
         {
-            e.GetComponent<SpriteRenderer>().sprite = runner.Spr;
+            e.SetAnimation(runner.runAnim);
         }
 
         public override void Action(Entity e)
@@ -102,7 +102,7 @@ public class Runner : MonoBehaviour
 
         public override void Start(Entity e)
         {
-            e.GetComponent<SpriteRenderer>().sprite = runner.StartSpr;
+            e.SetAnimation(runner.startAnim);
             if (runner.targetSpeed != 0)
                 e.GetComponent<SpriteRenderer>().flipX = (runner.targetSpeed < 0);
         }
@@ -122,8 +122,8 @@ public class Runner : MonoBehaviour
 
         public override void Start(Entity e)
         {
+            e.SetAnimation(runner.stopAnim);
             e.SetIntVelocityX(0);
-            e.GetComponent<SpriteRenderer>().sprite = runner.StopSpr;
         }
     }
 }

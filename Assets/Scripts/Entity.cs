@@ -4,25 +4,31 @@ using UnityEngine;
 
 public class Entity : MonoBehaviour
 {
-    public Sprite IdleSpr;
+    public Vector2 gravity = new Vector2(0, -.4f);
+    public EntityAnimation idleAnim;
 
     private Rigidbody2D rb;
 
     private Vector2 intVelocity;
     private Vector2 extVelocity;
 
-    public Vector2 gravity = new Vector2(0, -.4f);
-
     private bool grounded;
     private Vector2 groundNormal;
 
-    public EntityState state;
+    private EntityAnimation anim;
+    private EntityState state;
+
 
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+
+        anim = null;
+
         state = new IdleState.Idle(this);
+        state.Start(this);
+
     }
 
     // Update is called once per frame
@@ -137,9 +143,6 @@ public class Entity : MonoBehaviour
             state.End(this);
             state = _state;
             state.Start(this);
-
-            if (state.Name == "idle")
-                GetComponent<SpriteRenderer>().sprite = IdleSpr;
         }
     }
     public void TransitionState(System.Type stateType)
@@ -155,6 +158,24 @@ public class Entity : MonoBehaviour
 
             TransitionState(newState);
         }
+    }
+
+    // Animation
+
+    public void SetAnimation(EntityAnimation newAnim)
+    {
+        if (anim != null)
+            anim.Finish();
+
+        anim = newAnim;
+
+        if (anim != null)
+            anim.Begin(this);
+    }
+
+    public void SetAnimationIdle()
+    {
+        SetAnimation(idleAnim);
     }
 
     // Ground Detection

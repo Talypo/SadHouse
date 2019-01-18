@@ -11,5 +11,10 @@ namespace IdleState
         {
             AllowAnyPrevious = true;
         }
+
+        public override void Start(Entity e)
+        {
+            e.SetAnimationIdle();
+        }
     }
 }

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 public class Jumper : MonoBehaviour
 {
-    public Sprite Spr;
-    public Sprite StartSpr;
-    public Sprite StopSpr;
+    public EntityAnimation jumpAnim;
+    public EntityAnimation squatAnim;
+    public EntityAnimation landAnim;
 
     private Entity entity;
 
@@ -15,7 +15,7 @@ public class Jumper : MonoBehaviour
     public float maxAirSpeed = 2.0f;
     private float targetAirSpeed = 0;
 
-    public float squatLag = .2f;
+    public float squatLag = .1f;
     public float landLag = .1f;
 
     // Start is called before the first frame update
@@ -66,7 +66,7 @@ public class Jumper : MonoBehaviour
 
         public override void Start(Entity e)
         {
-            e.GetComponent<SpriteRenderer>().sprite = jumper.Spr;
+            e.SetAnimation(jumper.jumpAnim);
             e.SetExtVelocityY(jumper.targetSpeed);
         }
 
@@ -93,7 +93,7 @@ public class Jumper : MonoBehaviour
 
         public override void Start(Entity e)
         {
-            e.GetComponent<SpriteRenderer>().sprite = jumper.StartSpr;
+            e.SetAnimation(jumper.squatAnim);
             e.SetIntVelocityX(0);
         }
     }
@@ -112,7 +112,7 @@ public class Jumper : MonoBehaviour
 
         public override void Start(Entity e)
         {
-            e.GetComponent<SpriteRenderer>().sprite = jumper.StopSpr;
+            e.SetAnimation(jumper.landAnim);
             e.SetIntVelocityX(0);
         }
     }
