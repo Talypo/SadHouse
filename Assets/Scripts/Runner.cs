@@ -44,9 +44,16 @@ public class Runner : MonoBehaviour
 
         targetSpeed = power * maxSpeed;
         if (turn)
-            entity.TransitionState(typeof(RunStop));
+        {
+            Stop();
+        }
         else
-            entity.TransitionState(typeof(RunStart));
+        {
+            if (startLag != 0)
+                entity.TransitionState(typeof(RunStart));
+            else
+                entity.TransitionState(typeof(RunState));
+        }
     }
 
     public void Stop()
@@ -65,6 +72,7 @@ public class Runner : MonoBehaviour
         {
             runner = e.GetComponent<Runner>();
             AddPrevious(typeof(RunStart));
+            AddPrevious(typeof(IdleState.Idle));
         }
 
         public override void Start(Entity e)
