@@ -4,13 +4,17 @@ using UnityEngine;
 
 public class Runner : MonoBehaviour
 {
+    public Sprite Spr;
+    public Sprite StartSpr;
+    public Sprite StopSpr;
+
     private Entity entity;
 
-    private float maxSpeed = 4.0f;
+    public float maxSpeed = 4.0f;
     private float targetSpeed = 0;
 
-    private float startLag = .1f;  // Time to go from standing still to moving
-    private float stopLag = .1f;  // To to go from moving to stopped
+    public float startLag = .1f;  // Time to go from standing still to moving
+    public float stopLag = .1f;  // To to go from moving to stopped
 
     // Start is called before the first frame update
     void Start()
@@ -21,14 +25,7 @@ public class Runner : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetAxis("Horizontal") != 0)
-        {
-            Run(Input.GetAxis("Horizontal"));
-        }
-        else
-        {
-            Stop();
-        }
+        Run(Input.GetAxis("Horizontal"));
     }
 
     void FixedUpdate()
@@ -37,8 +34,19 @@ public class Runner : MonoBehaviour
 
     public void Run(float power)
     {
+        if (power == 0)
+        {
+            Stop();
+            return;
+        }
+
+        bool turn = targetSpeed != 0 && ((targetSpeed < 0) != (power < 0));
+
         targetSpeed = power * maxSpeed;
-        entity.TransitionState(new RunStart(this));
+        if (turn)
+            entity.TransitionState(new RunStop(this));
+        else
+            entity.TransitionState(new RunStart(this));
     }
 
     public void Stop()
@@ -59,9 +67,16 @@ public class Runner : MonoBehaviour
             AddPrevious(typeof(RunStart));
         }
 
+        public override void Start(Entity e)
+        {
+            e.GetComponent<SpriteRenderer>().sprite = runner.Spr;
+        }
+
         public override void Action(Entity e)
         {
             e.SetIntVelocityX(runner.targetSpeed);
+            if (runner.targetSpeed != 0)
+                e.GetComponent<SpriteRenderer>().flipX = (runner.targetSpeed < 0);
         }
     }
 
@@ -75,6 +90,13 @@ public class Runner : MonoBehaviour
             runner = _runner;
             AddPrevious(typeof(IdleState.Idle));
             AddNextTimeout(typeof(RunState), runner.startLag);
+        }
+
+        public override void Start(Entity e)
+        {
+            e.GetComponent<SpriteRenderer>().sprite = runner.StartSpr;
+            if (runner.targetSpeed != 0)
+                e.GetComponent<SpriteRenderer>().flipX = (runner.targetSpeed < 0);
         }
     }
 
@@ -93,6 +115,7 @@ public class Runner : MonoBehaviour
         public override void Start(Entity e)
         {
             e.SetIntVelocityX(0);
+            e.GetComponent<SpriteRenderer>().sprite = runner.StopSpr;
         }
     }
 }

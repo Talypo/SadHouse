@@ -1,25 +1,26 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 public class Jumper : MonoBehaviour
 {
     private Entity entity;
 
-    private float maxSpeed = 9.0f;
+    public float gravity = .4f;
+
+    public float maxSpeed = 9.0f;
     private float targetSpeed = 0;
 
-    private float maxAirSpeed = 2.0f;
+    public float maxAirSpeed = 2.0f;
     private float targetAirSpeed = 0;
 
-    private float squatLag = .1f;
-    private float landLag = .1f;
+    public float squatLag = .1f;
+    public float landLag = .1f;
 
     // Start is called before the first frame update
     void Start()
     {
         entity = GetComponent<Entity>();
-        entity.SetGravity(new Vector2(0, -.4f));
+        entity.SetGravity(new Vector2(0, -gravity));
     }
 
     // Update is called once per frame
@@ -84,6 +85,7 @@ public class Jumper : MonoBehaviour
             AddPrevious(typeof(IdleState.Idle));
             AddPrevious(typeof(Runner.RunStart));
             AddPrevious(typeof(Runner.RunState));
+            AddPrevious(typeof(Runner.RunStop));
             AddNextTimeout(typeof(JumpState), jumper.squatLag);
         }
 

@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Entity : MonoBehaviour
 {
+    public Sprite IdleSpr;
+
     private Rigidbody2D rb;
 
     private Vector2 intVelocity;
@@ -36,9 +38,7 @@ public class Entity : MonoBehaviour
         EntityState next = state.Update(this);
         if (next != state)
         {
-            state.End(this);
-            state = next;
-            state.Start(this);
+            TransitionState(next);
         }
 
         // Movement
@@ -148,6 +148,9 @@ public class Entity : MonoBehaviour
             state.End(this);
             state = _state;
             state.Start(this);
+
+            if (state.Name == "idle")
+                GetComponent<SpriteRenderer>().sprite = IdleSpr;
         }
     }
 
