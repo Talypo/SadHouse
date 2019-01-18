@@ -11,7 +11,7 @@ public class Entity : MonoBehaviour
     private Vector2 intVelocity;
     private Vector2 extVelocity;
 
-    private Vector2 gravity;
+    public Vector2 gravity = new Vector2(0, -.4f);
 
     private bool grounded;
     private Vector2 groundNormal;
@@ -120,17 +120,6 @@ public class Entity : MonoBehaviour
         return rb.velocity.y;
     }
 
-    // Gravity
-
-    public void SetGravity(Vector2 vec)
-    {
-        gravity = vec;
-    }
-    public Vector2 GetGravity()
-    {
-        return gravity;
-    }
-
     // State
 
     public void SetState(string _state)
@@ -222,6 +211,6 @@ public class Entity : MonoBehaviour
 
     public float FallSpeed()
     {
-        return Vector2.Dot(gravity, rb.velocity.normalized);
+        return Vector2.Dot(gravity.normalized, rb.velocity);
     }
 }

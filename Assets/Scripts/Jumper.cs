@@ -9,8 +9,6 @@ public class Jumper : MonoBehaviour
 
     private Entity entity;
 
-    public float gravity = .4f;
-
     public float maxSpeed = 9.0f;
     private float targetSpeed = 0;
 
@@ -24,7 +22,6 @@ public class Jumper : MonoBehaviour
     void Start()
     {
         entity = GetComponent<Entity>();
-        entity.SetGravity(new Vector2(0, -gravity));
     }
 
     // Update is called once per frame
